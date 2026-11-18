@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Connect API</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Campus Connect</h1>
+      <p>Integrated Student Enrollment and Information System &middot; Flask REST API</p>
+    </div>
+    <span id="status" class="badge">checking…</span>
+  </header>
+
+  <main>
+    <section class="cards">
+      <article class="card"><span>Students</span><strong id="stat-students">–</strong></article>
+      <article class="card"><span>Courses</span><strong id="stat-courses">–</strong></article>
+      <article class="card"><span>Enrollments</span><strong id="stat-enrollments">–</strong></article>
+      <article class="card"><span>Available courses</span><strong id="stat-available">–</strong></article>
+    </section>
+
+    <section class="panel">
+      <h2>Students in SQLite</h2>
+      <table>
+        <thead>
+          <tr><th>Student ID</th><th>Name</th><th>Program</th><th>Year</th></tr>
+        </thead>
+        <tbody id="student-rows"></tbody>
+      </table>
+      <p class="hint">
+        This page is served by Flask itself. The Campus Connect dashboard is the separate
+        frontend that talks to the same endpoints at <code>/api</code>.
+      </p>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='javascript/script.js') }}"></script>
+</body>
+</html>
