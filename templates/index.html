@@ -1,43 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Campus Connect API</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f4;
+    --panel: #ffffff;
+    --sidebar: #f2f0ed;
+    --ink: #1c1b1f;
+    --muted: #6f6c72;
+    --line: #e7e4e0;
+    --red: #c4243b;
+    --red-soft: #fbe9ec;
+    --green: #2f8f5b;
+    --green-soft: #e6f4ec;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+  a { color: inherit; text-decoration: none; }
+
+  .app { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--sidebar); border-right: 1px solid var(--line); padding: 22px 16px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 12px; padding: 0 8px 26px; }
+  .brand-logo { width: 44px; height: 44px; border-radius: 50%; background: var(--red); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(196,36,59,.28); }
+  .brand-name { font-weight: 700; font-size: 16px; letter-spacing: -.01em; }
+  .brand-sub { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+  .nav-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; color: var(--muted); text-transform: uppercase; padding: 10px 12px 8px; }
+  .nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: #3b393e; font-weight: 500; font-size: 14px; margin-bottom: 2px; cursor: pointer; }
+  .nav a svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .nav a:hover { background: rgba(0,0,0,.04); }
+  .nav a.active { background: #e9e6e2; color: var(--ink); font-weight: 600; }
+  .nav a.active svg { color: var(--red); }
+  .nav-section { margin-top: 16px; }
+  .sync-card { margin-top: auto; background: rgba(255,255,255,.6); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 11.5px; color: var(--muted); }
+  .sync-card b { display: flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 600; font-size: 12px; margin-bottom: 3px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; flex: none; }
+  .dot.off { background: #c9a227; }
+
+  /* Main */
+  .main { min-width: 0; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 22px 40px; border-bottom: 1px solid var(--line); background: rgba(247,246,244,.85); backdrop-filter: blur(6px); }
+  .topbar .tagline { color: #4a484d; font-size: 14.5px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px 6px 6px; font-weight: 500; font-size: 13px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 8px 16px; font: 500 13px var(--sans); color: #3b393e; cursor: pointer; }
+  .btn-ghost:hover { background: #faf9f7; }
+
+  .content { padding: 32px 40px 48px; max-width: 1280px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.02em; }
+  .sub { color: var(--muted); margin-top: 4px; font-size: 14px; }
+  .live-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: var(--green); background: var(--green-soft); border: 1px solid #cfe7d9; border-radius: 999px; padding: 6px 14px; white-space: nowrap; }
+  .live-pill.off { color: #8a6d0b; background: #fbf3d9; border-color: #efe2ad; }
+  .live-pill.off .dot { background: #c9a227; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 24px 28px; box-shadow: 0 1px 2px rgba(20,18,22,.04), 0 8px 24px rgba(20,18,22,.04); }
+  .card-label { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: #4a484d; text-transform: uppercase; font-weight: 500; }
+  .card-hint { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+
+  .hero { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .hero-num { font-size: 52px; font-weight: 700; letter-spacing: -.03em; line-height: 1; margin-top: 8px; }
+  .hero-mid { display: flex; align-items: center; gap: 56px; }
+  .hero-note { color: #4a484d; font-size: 14px; margin-top: 14px; }
+  .ring { width: 72px; height: 72px; position: relative; flex: none; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #4a484d; }
+
+  .grid2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .bars { display: flex; align-items: flex-end; gap: 9px; height: 80px; margin: 26px 0 22px; }
+  .bars i { flex: 1; background: var(--red); border-radius: 3px; min-height: 8px; opacity: .92; }
+  .line-wrap { height: 80px; margin: 22px 0 14px; }
+  .line-wrap svg { width: 100%; height: 100%; overflow: visible; }
+  .stats { display: flex; gap: 44px; }
+  .stat .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+  .stat .v { font-size: 22px; font-weight: 600; margin-top: 6px; }
+  .trend { color: #4a484d; font-size: 12.5px; margin-top: 18px; }
+
+  .grid3 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; }
+  .panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .panel-title h3 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .panel-title h3 svg { width: 16px; height: 16px; stroke: var(--red); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tag-live { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 13.5px; padding: 6px 0; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  .row:last-child { border-bottom: 0; }
+  .row small { color: var(--muted); font-size: 12px; }
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--red-soft); color: var(--red); text-transform: capitalize; }
+  .badge.ok { background: var(--green-soft); color: var(--green); }
+  .ann h4 { font-size: 14.5px; font-weight: 600; }
+  .ann p { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .ann .meta { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--muted); margin-top: 8px; text-transform: uppercase; }
+  .ann + .ann { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+
+  @media (max-width: 960px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; }
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    .topbar, .content { padding-left: 20px; padding-right: 20px; }
+    .hero-mid { gap: 24px; }
+  }
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <h1>Campus Connect</h1>
-      <p>Integrated Student Enrollment and Information System &middot; Flask REST API</p>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2.5 9 2.5 12 0v-5"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Campus Connect</div>
+        <div class="brand-sub">Integrated SIS</div>
+      </div>
     </div>
-    <span id="status" class="badge">checking…</span>
-  </header>
 
-  <main>
-    <section class="cards">
-      <article class="card"><span>Students</span><strong id="stat-students">–</strong></article>
-      <article class="card"><span>Courses</span><strong id="stat-courses">–</strong></article>
-      <article class="card"><span>Enrollments</span><strong id="stat-enrollments">–</strong></article>
-      <article class="card"><span>Available courses</span><strong id="stat-available">–</strong></article>
-    </section>
+    <div class="nav-label">Portal</div>
+    <nav class="nav">
+      <a class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</a>
+      <a href="/api/students"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2.2.6 3.5 2.6 3.5 5.5"/></svg>Students</a>
+      <a href="/api/courses"><svg viewBox="0 0 24 24"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5z"/><path d="M12 6v13.5"/></svg>Courses</a>
+      <a href="/api/enrollments"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9zM9 11h6M9 15h6"/></svg>Enrollments</a>
+      <a><svg viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 9a4 4 0 0 1 0 6"/></svg>Announcements</a>
+      <a><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>Student Profile</a>
+    </nav>
 
-    <section class="panel">
-      <h2>Students in SQLite</h2>
-      <table>
-        <thead>
-          <tr><th>Student ID</th><th>Name</th><th>Program</th><th>Year</th></tr>
-        </thead>
-        <tbody id="student-rows"></tbody>
-      </table>
-      <p class="hint">
-        This page is served by Flask itself. The Campus Connect dashboard is the separate
-        frontend that talks to the same endpoints at <code>/api</code>.
-      </p>
-    </section>
-  </main>
+    <div class="nav-label nav-section">Integration</div>
+    <nav class="nav">
+      <a href="/api/students"><svg viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M7 8h10v4a5 5 0 0 1-10 0z"/><path d="M12 17v4"/></svg>API Connection</a>
+      <a><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Backend &amp; Guide</a>
+    </nav>
 
-  <script src="{{ url_for('static', filename='javascript/script.js') }}"></script>
+    <div class="sync-card">
+      <b><span class="dot" id="sideDot"></span><span id="sideStatus">Flask API connected</span></b>
+      Reading and writing through the REST API.
+    </div>
+  </aside>
+
+  <section class="main">
+    <header class="topbar">
+      <div class="tagline">Integrated Student Enrollment and Information System</div>
+      <div class="topbar-right">
+        <div class="pill"><span class="avatar" id="avatar">AC</span><span id="userName">amelia castillano</span></div>
+        <button class="btn-ghost" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+          Sign out
+        </button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="eyebrow">Campus Connect</div>
+      <div class="head-row">
+        <div>
+          <h1>Dashboard overview</h1>
+          <p class="sub">Enrollment activity across the university, read from the Flask REST API.</p>
+        </div>
+        <span class="live-pill" id="livePill"><span class="dot"></span><span id="liveText">Live · Flask API connected</span></span>
+      </div>
+
+      <div class="card hero">
+        <div class="hero-mid">
+          <div>
+            <div class="card-label">Total enrollments</div>
+            <div class="hero-num" id="totalEnroll">0</div>
+          </div>
+          <div class="hero-note" id="pendingNote">awaiting approval</div>
+        </div>
+        <div class="ring">
+          <svg viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#ece8e4" stroke-width="5"/>
+            <circle id="ringArc" cx="40" cy="40" r="34" fill="none" stroke="#c4243b" stroke-width="5" stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+          </svg>
+          <span id="ringPct">0%</span>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <div class="card-label">Students</div>
+          <div class="card-hint">Enrolled this semester</div>
+          <div class="bars" id="bars"></div>
+          <div class="stats">
+            <div class="stat"><div class="k">Total</div><div class="v" id="stStudents">0</div></div>
+            <div class="stat"><div class="k">Programs</div><div class="v" id="stPrograms">0</div></div>
+            <div class="stat"><div class="k">Year levels</div><div class="v" id="stYears">0</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Courses</div>
+          <div class="card-hint">Enrollment trend · recent days</div>
+          <div class="line-wrap">
+            <svg viewBox="0 0 300 80" preserveAspectRatio="none" id="lineSvg">
+              <polyline id="linePath" fill="none" stroke="#c4243b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" points=""/>
+            </svg>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="k">Total</div><div class="v" id="coTotal">0</div></div>
+            <div class="stat"><div class="k">Available</div><div class="v" id="coAvail">0</div></div>
+            <div class="stat"><div class="k">Departments</div><div class="v" id="coDepts">0</div></div>
+          </div>
+          <div class="trend" id="trendNote">+0% enrollment activity since Monday</div>
+        </div>
+      </div>
+
+      <div class="grid3">
+        <div class="card">
+          <div class="panel-title"><h3>Recent enrollment activity</h3><span class="tag-live">LIVE</span></div>
+          <div id="activity"><div class="empty">No enrollment activity yet.</div></div>
+        </div>
+        <div class="card">
+          <div class="panel-title">
+            <h3><svg viewBox="0 0 24 24"><path d="M3 11v3a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 9a4 4 0 0 1 0 6"/></svg>Recent announcements</h3>
+          </div>
+          <div id="announce"><div class="empty">No announcements yet.</div></div>
+        </div>
+      </div>
+    </main>
+  </section>
+</div>
+
+<script>
+(function () {
+  var API = "/api";   // same origin as Flask. Use full URL if hosting this file elsewhere.
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]; }); }
+
+  // Accept [..] or {students:[..]} / {data:[..]} / {items:[..]}
+  function asList(d, key) {
+    if (Array.isArray(d)) return d;
+    if (d && Array.isArray(d[key])) return d[key];
+    if (d && Array.isArray(d.data)) return d.data;
+    if (d && Array.isArray(d.items)) return d.items;
+    return [];
+  }
+  function get(path, key) {
+    return fetch(API + path, { headers: { "Accept": "application/json" } })
+      .then(function (r) { if (!r.ok) throw new Error(path + " " + r.status); return r.json(); })
+      .then(function (d) { return asList(d, key); });
+  }
+  function pick(o) { for (var i = 1; i < arguments.length; i++) { var v = o[arguments[i]]; if (v != null && v !== "") return v; } return null; }
+  function uniq(list, fn) { var m = {}; list.forEach(function (x) { var v = fn(x); if (v != null) m[v] = 1; }); return Object.keys(m).length; }
+
+  function setStatus(ok) {
+    $("livePill").classList.toggle("off", !ok);
+    $("liveText").textContent = ok ? "Live · Flask API connected" : "Flask API unreachable";
+    $("sideStatus").textContent = ok ? "Flask API connected" : "Flask API unreachable";
+    $("sideDot").classList.toggle("off", !ok);
+  }
+
+  function dayKey(x) {
+    var raw = pick(x, "created_at", "enrolled_at", "date", "timestamp");
+    if (!raw) return null;
+    var d = new Date(raw);
+    return isNaN(d) ? null : Math.floor(d.getTime() / 86400000);
+  }
+
+  function renderBars(enrolls, students) {
+    // 15 buckets: enrollments per recent day when dates exist, else a gentle ramp from student count
+    var wrap = $("bars"), vals = [], today = Math.floor(Date.now() / 86400000), i;
+    var byDay = {};
+    enrolls.forEach(function (e) { var k = dayKey(e); if (k != null) byDay[k] = (byDay[k] || 0) + 1; });
+    var haveDates = Object.keys(byDay).length > 0;
+    for (i = 14; i >= 0; i--) vals.push(haveDates ? (byDay[today - i] || 0) : 0);
+    var max = Math.max.apply(null, vals.concat([1]));
+    if (!haveDates) {
+      var base = Math.max(students, 1);
+      vals = vals.map(function (_, idx) { return base * (0.35 + 0.65 * (idx / 14)) * (idx % 2 ? 0.85 : 1); });
+      max = Math.max.apply(null, vals);
+    }
+    wrap.innerHTML = vals.map(function (v) {
+      return '<i style="height:' + Math.max(10, Math.round((v / max) * 100)) + '%"></i>';
+    }).join("");
+  }
+
+  function renderLine(enrolls) {
+    var today = Math.floor(Date.now() / 86400000), byDay = {}, pts = [], i, cum = 0;
+    enrolls.forEach(function (e) { var k = dayKey(e); if (k != null) byDay[k] = (byDay[k] || 0) + 1; });
+    var series = [];
+    for (i = 6; i >= 0; i--) { cum += (byDay[today - i] || 0); series.push(cum); }
+    if (series[6] === 0) series = [10, 14, 12, 20, 24, 30, 36].map(function (v) { return v * 0.4; });
+    var max = Math.max.apply(null, series), min = Math.min.apply(null, series), span = (max - min) || 1;
+    series.forEach(function (v, idx) { pts.push((idx / 6) * 300 + "," + (70 - ((v - min) / span) * 55)); });
+    $("linePath").setAttribute("points", pts.join(" "));
+
+    var first = series[0] || 0, last = series[series.length - 1] || 0;
+    var pct = first ? Math.round(((last - first) / first) * 100) : (last ? 100 : 0);
+    $("trendNote").textContent = (pct >= 0 ? "+" : "") + pct + "% enrollment activity since Monday";
+  }
+
+  function renderActivity(enrolls, students, courses) {
+    var box = $("activity");
+    if (!enrolls.length) { box.innerHTML = '<div class="empty">No enrollment activity yet.</div>'; return; }
+    var sMap = {}, cMap = {};
+    students.forEach(function (s) { sMap[pick(s, "id", "student_id")] = pick(s, "name", "full_name") || pick(s, "student_id"); });
+    courses.forEach(function (c) { cMap[pick(c, "id", "course_id")] = pick(c, "title", "name", "code") || pick(c, "course_id"); });
+    box.innerHTML = enrolls.slice(-5).reverse().map(function (e) {
+      var who = pick(e, "student_name") || sMap[pick(e, "student_id")] || ("Student " + pick(e, "student_id"));
+      var what = pick(e, "course_title", "course_name") || cMap[pick(e, "course_id")] || ("Course " + pick(e, "course_id"));
+      var st = String(pick(e, "status") || "pending").toLowerCase();
+      var ok = st === "approved" || st === "enrolled" || st === "confirmed";
+      return '<div class="row"><div>' + esc(who) + '<br><small>' + esc(what) + '</small></div><span class="badge' + (ok ? " ok" : "") + '">' + esc(st) + '</span></div>';
+    }).join("");
+  }
+
+  function renderAnnouncements(list) {
+    var box = $("announce");
+    if (!list.length) {
+      box.innerHTML = '<div class="ann"><h4>Welcome to Campus Connect</h4><p>Enrollment for the new term is now open.</p><div class="meta">Administrator · ' + new Date().toISOString().slice(0, 10) + '</div></div>';
+      return;
+    }
+    box.innerHTML = list.slice(-3).reverse().map(function (a) {
+      var date = String(pick(a, "date", "created_at") || "").slice(0, 10);
+      return '<div class="ann"><h4>' + esc(pick(a, "title")) + '</h4><p>' + esc(pick(a, "body", "message", "content")) + '</p><div class="meta">' + esc(pick(a, "author") || "Administrator") + (date ? " · " + esc(date) : "") + '</div></div>';
+    }).join("");
+  }
+
+  function render(students, courses, enrolls, announcements) {
+    var pending = enrolls.filter(function (e) { return String(pick(e, "status") || "pending").toLowerCase() === "pending"; }).length;
+    var approved = enrolls.length - pending;
+
+    $("totalEnroll").textContent = enrolls.length;
+    $("pendingNote").textContent = pending ? pending + " awaiting approval" : "awaiting approval";
+    var pct = enrolls.length ? Math.round((approved / enrolls.length) * 100) : 0;
+    $("ringPct").textContent = pct + "%";
+    $("ringArc").setAttribute("stroke-dashoffset", 213.6 * (1 - pct / 100));
+
+    $("stStudents").textContent = students.length;
+    $("stPrograms").textContent = uniq(students, function (s) { return pick(s, "program"); });
+    $("stYears").textContent = uniq(students, function (s) { return pick(s, "year_level", "year"); });
+
+    var avail = courses.filter(function (c) {
+      var a = pick(c, "available", "is_available", "seats_available", "slots");
+      return a === null ? true : (typeof a === "number" ? a > 0 : !!a && a !== "false" && a !== "0");
+    }).length;
+    $("coTotal").textContent = courses.length;
+    $("coAvail").textContent = avail;
+    $("coDepts").textContent = uniq(courses, function (c) { return pick(c, "department", "dept"); });
+
+    renderBars(enrolls, students.length);
+    renderLine(enrolls);
+    renderActivity(enrolls, students, courses);
+    renderAnnouncements(announcements);
+  }
+
+  // Render immediately with zeros, then fill from the API.
+  render([], [], [], []);
+
+  Promise.all([
+    get("/students", "students"),
+    get("/courses", "courses"),
+    get("/enrollments", "enrollments"),
+    get("/announcements", "announcements").catch(function () { return []; })  // optional endpoint
+  ]).then(function (r) {
+    setStatus(true);
+    render(r[0], r[1], r[2], r[3]);
+  }).catch(function (err) {
+    console.error(err);
+    setStatus(false);
+  });
+})();
+</script>
 </body>
 </html>
